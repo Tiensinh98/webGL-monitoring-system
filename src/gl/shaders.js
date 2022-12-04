@@ -20,7 +20,7 @@ export const flatFrag =
       fragColor = vertex_color;
    }`
 
-export const ScalarFieldVertex =
+export const scalarFieldVertex =
    `#version 300 es
    precision highp float;
    layout(location = 0) in highp vec3 vertex;
@@ -34,7 +34,7 @@ export const ScalarFieldVertex =
       frag_scalar_value = scalar_value;
    }`;
 
-export const ScalarFieldFrag = 
+export const scalarFieldFrag = 
    `#version 300 es
    precision highp float;
    const highp vec4 low_color = vec4(0.0, 0.0, 0.7, 1.0);
@@ -87,3 +87,44 @@ export const ScalarFieldFrag =
       }
       fragColor = vec4(1.0, 0.0, 0.0, 1.0);
    }`;
+
+export const shaderTypes = [
+	{
+		name: "flat",
+		vertex: flatVertex,
+		fragment: flatFrag
+		attribNames: []
+	},
+	{
+		name: "pick",
+		vertex: flatVertex,
+		fragment: flatFrag
+		attribNames: []
+	},
+	{
+		name: "scalarField",
+		vertex: scalarFieldVertex,
+		fragment: scalarFieldFrag,
+		attribs: [
+			{
+				name: "scalar_value",
+				infos: attribInfos.scalar_value
+			}
+		]
+	}
+]
+
+export const attribInfos = {
+	color: {
+		nComponent: 3,
+		location: 1
+	},
+	normal: {
+		nComponent: 3,
+		location: 2
+	},
+	scalar_value: {
+		nComponent: 1,
+		location: 3
+	}
+}
