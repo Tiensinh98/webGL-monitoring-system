@@ -27,7 +27,7 @@ export const graphicsOptions = {
 	pick: null
 }
 
-export default GraphicsBody {
+export default class GraphicsBody {
 	constructor(vertices, scalarValues) {
 		this.vertices = vertices;
 		this.scalarValues = scalarValues;
@@ -47,8 +47,5 @@ export var createGenericGraphicsItem = (mesh, fieldName, options) => {
 	const vertices = mesh.getVertices();
 	const scalarValues = mesh.getScalarValuesFromFieldName(fieldName);
 	const indices = mesh.getIndices();
-	return GraphicsBody.create(vertices, indices, "scalarField", "scalarValues, {
-	...graphicsOptions,
-	...options
-})
+	return
 }

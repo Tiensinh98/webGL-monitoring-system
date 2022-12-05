@@ -2,7 +2,7 @@ import {
 	vec3
 } from 'gl-matrix';
 
-const min = (arr) {
+const min = (arr) => {
 	var minVec = vec3.create();
 	arr.forEach(
 		(v, i, subArr) => {
@@ -17,7 +17,7 @@ const min = (arr) {
 	return minVec;
 }
 
-export const max = (arr) {
+export const max = (arr) => {
 	var maxVec = vec3.create();
 	arr.forEach(
 		(v, i, subArr) => {

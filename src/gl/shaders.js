@@ -2,12 +2,12 @@ export const flatVertex =
    `#version 300 es
    precision highp float;
    layout(location = 0) in highp vec3 vertex;
-   uniform mat4 model_view;
-   uniform mat4 projection;
+   uniform mat4 eye_from_model;
+   uniform mat4 ndc_from_eye;
    uniform highp vec3 color;
    out vec4 vertex_color;
    void main() {
-      gl_Position = projection * model_view * vec4(vertex, 1.0);       
+      gl_Position = ndc_from_eye * eye_from_model * vec4(vertex, 1.0);       
       vertex_color = vec4(color, 1.0);
    }`;
 
@@ -92,13 +92,13 @@ export const shaderTypes = [
 	{
 		name: "flat",
 		vertex: flatVertex,
-		fragment: flatFrag
+		fragment: flatFrag,
 		attribNames: []
 	},
 	{
 		name: "pick",
 		vertex: flatVertex,
-		fragment: flatFrag
+		fragment: flatFrag,
 		attribNames: []
 	},
 	{
