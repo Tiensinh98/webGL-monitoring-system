@@ -1,41 +1,61 @@
-import vec3 from 'gl-matrix';
-import {
-	min, max
-} from './arraytools.js';
+import Vec3 from './glmatrix.js';
+import { numpy as np } from './numpy.js';
 
 class BoundingBox {
 	constructor(mn, mx) {
+		if (mn === undefined) mn = [0.0, 0.0, 0.0];
+		if (mx === undefined) mx = [0.0, 0.0, 0.0];
 		this.mn = mn;
-		this.mx = mx;
-		this.getDiag = this.getDiag.bind(this);
-		this.getCenter = this.getCenter.bind(this);
-	}
-
-	create() {
-		return new BoundingBox(vec3.create(), vec3.create());
-	}
-
-	fromArray(arr) {
-		return new BoundingBox(min(arr), max(arr));
+		this.mx = max;
 	}
 
 	add(other) {
-
+		return new BoundingBox(
+			np.min([this.mn, other.mn], axis=0), 
+			np.max([this.mx, other.mx], axis=0)
+		);
 	}
 
-	subtract() {
-
+	diag() {
+		return np.distance(this.mx, this.mn);
 	}
 
-	getDiag() {
-		return vec3.distance(mx, mn);
+	center() {
+		return np.scale(np.add(this.mx, this.mn), 0.5);
 	}
 
-	getCenter() {
-		var ret = vec3.create();
-		vec3.add(ret, this.mx, this.mn);
-		vec3.scale(ret, ret, 0.5);
+	radius() {
+		let dm = np.scale(np.subtract(this.mx, this.mn), 0.5);
+        return np.sqrt(np.square(dm));
+	}
+
+	corners() {
+		let a = this.mn;
+		let b = this.mx;
+		let points = [
+			[a[0], a[1], a[2]],
+			[a[0], a[1], b[2]], 
+			[a[0], b[1], a[2]],
+            [a[0], b[1], b[2]], 
+			[b[0], a[1], a[2]], 
+			[b[0], a[1], b[2]],
+            [b[0], b[1], a[2]], 
+			[b[0], b[1], b[2]]
+		];
+		let ret = [];
+		points.forEach(p => {
+			ret.push(new Vec3(p));
+		})
 		return ret;
 	}
 
+	getScaled(factor) {
+		let center = this.center();
+        let v = np.scale(np.subtract(this.mx, this.mn), (factor / 2.0))
+        return new BoundingBox(np.subtract(center, v), np.add(center, v));
+	}
+}
+
+export default boundingBox = {
+	create: (arr) => new BoundingBox(np.min(arr), np.max(arr))
 }

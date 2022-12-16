@@ -12,6 +12,7 @@
     "cubejs": "^1.1.0",
     "flatpickr": "^4.6.13",
     "gl-matrix": "^3.4.3",
+    "matrix-js": "^1.6.1",
     "moment": "^2.29.4",
     "node-sass": "^8.0.0",
     "parcel-bundler": "^1.8.1",
