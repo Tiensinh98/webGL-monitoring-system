@@ -1,5 +1,5 @@
-import { matrix } from 'matrix-js';
-
+import matrix from 'matrix-js';
+import assert from 'assert';
 
 var fromMat = (mat) => {
 	let ret = [];
@@ -22,7 +22,7 @@ var min = (arr, axis) => {
 	const size = m.size();
 	let ret = [];
 	if (axis === undefined) {
-		return Math.min(...array.flatten(arr));
+		return Math.min(...flatten(arr));
 	}
 	else if (axis === 0) {
 		for (let i = 0; i < size[1]; i ++) {
@@ -46,7 +46,7 @@ var max = (arr, axis) => {
 	const size = m.size();
 	let ret = [];
 	if (axis === undefined) {
-		return Math.max(...array.flatten(arr));
+		return Math.max(...flatten(arr));
 	}
 	else if (axis === 0) {
 		for (let i = 0; i < size[1]; i ++) {
@@ -98,7 +98,7 @@ var sum = (arr, axis) => {
 	}
 	else if (axis === 1) {
 		for (let i = 0; i < size[0]; i ++) {
-			ret.push(m(i).reduce((a, b) => a +b, 0));
+			ret.push(m(i).reduce((a, b) => a + b, 0));
 		}
 		return ret;
 	}
@@ -128,6 +128,7 @@ var sqrt = (arr) => {
 }
 
 var flatten = (arr) => {
+	if (matrix(arr).size().length === 1) return arr;
 	let m = [];
 	arr.forEach((element) => {
 		m = [...m, ...element];
@@ -140,10 +141,24 @@ var hypot = (dx, dy) => {
 }
 
 var distance = (arr1, arr2) => {
-	return Math.sqrt(sum(square(subtract(arr1, arr2))));
+	return Math.sqrt(sum(square(subtract(arr1, arr2)), axis=0));
 }
 
-export default numpy = {
+var getShape = (arr) => {
+	return matrix(arr).size();
+}
+
+var linspace = (mn, mx, interval) => {
+	assert(mn < mx, 'Min must be smaller than max');
+	let delta = (mx - mn) / (interval - 1);
+	let ret = [];
+	for (let i = 0; i <= interval - 1; i++) {
+		ret.push(mn + delta * i);
+	}
+	return ret;
+}
+
+export var numpy = {
 	fromMat: fromMat,
 	min: min,
 	max: max,
@@ -154,6 +169,8 @@ export default numpy = {
 	sqrt: sqrt,
 	flatten: flatten,
 	hypot: hypot,
-	distance: distance
+	distance: distance,
+	getShape: getShape,
+	linspace: linspace
 }
 

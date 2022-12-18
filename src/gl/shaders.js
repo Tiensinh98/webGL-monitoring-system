@@ -2,12 +2,12 @@ export const flatVertex =
    `#version 300 es
    precision highp float;
    layout(location = 0) in highp vec3 vertex;
-   uniform mat4 eye_from_model;
+   uniform mat4 eye_from_local;
    uniform mat4 ndc_from_eye;
    uniform highp vec3 color;
    out vec4 vertex_color;
    void main() {
-      gl_Position = ndc_from_eye * eye_from_model * vec4(vertex, 1.0);       
+      gl_Position = ndc_from_eye * eye_from_local * vec4(vertex, 1.0);       
       vertex_color = vec4(color, 1.0);
    }`;
 
@@ -26,11 +26,11 @@ export const scalarFieldVertex =
    layout(location = 0) in highp vec3 vertex;
    layout(location = 1) in highp vec3 normal;
    layout(location = 3) in float scalar_value;
-   uniform mat4 eye_from_model;
+   uniform mat4 eye_from_local;
    uniform mat4 ndc_from_eye;
    out float frag_scalar_value;
    void main(void) {
-      gl_Position = ndc_from_eye * eye_from_model * vec4(vertex, 1.0);
+      gl_Position = ndc_from_eye * eye_from_local * vec4(vertex, 1.0);
       frag_scalar_value = scalar_value;
    }`;
 
@@ -88,18 +88,35 @@ export const scalarFieldFrag =
       fragColor = vec4(1.0, 0.0, 0.0, 1.0);
    }`;
 
+export const vertexLoction = 0;
+
+export const attribInfos = {
+   'color': {
+      nComponent: 3,
+      location: 1
+   },
+   'normal': {
+      nComponent: 3,
+      location: 2
+   },
+   'scalar_value': {
+      nComponent: 1,
+      location: 3
+   }
+}
+
 export const shaderTypes = [
 	{
 		name: "flat",
 		vertex: flatVertex,
 		fragment: flatFrag,
-		attribNames: []
+		attribs: []
 	},
 	{
 		name: "pick",
 		vertex: flatVertex,
 		fragment: flatFrag,
-		attribNames: []
+		attribs: []
 	},
 	{
 		name: "scalarField",
@@ -113,18 +130,3 @@ export const shaderTypes = [
 		]
 	}
 ]
-
-export const attribInfos = {
-	color: {
-		nComponent: 3,
-		location: 1
-	},
-	normal: {
-		nComponent: 3,
-		location: 2
-	},
-	scalar_value: {
-		nComponent: 1,
-		location: 3
-	}
-}

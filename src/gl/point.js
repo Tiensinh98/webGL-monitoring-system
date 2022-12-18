@@ -1,9 +1,42 @@
-import {
-	Vec3, Vec4,
-	Mat4, Quat
-} from './glmatrix.js';
+import assert from 'assert';
 
-class Quaternion {
+import {
+	Vec3, Quat, Mat4
+} from './glmatrix.js';
+import { BoundingBox } from './boundingbox.js';
+
+export class Point {
+	constructor(ps) {
+		if (ps === undefined) ps = [0.0, 0.0, 0.0];
+		this.ps = new Vec3(ps);
+	}
+
+	scale(s) {
+		let ret = this.ps.scale(s);
+		return new Point([...ret.vec]);
+	}
+
+	midPoint(other) {
+		return new Point([...this.ps.add(other.ps).scale(0.5).vec]);
+	}
+}
+
+export class Direction {
+	constructor(dir) {
+		if (dir === undefined) dir = [1.0, 0.0, 0.0];
+		this.dir = new Vec3(dir).normalize();
+	}
+
+	negate() {
+		return new Vec3(...this.dir.negate());
+	}
+}
+
+export class Vector extends Vec3 {
+
+}
+
+export class Quaternion {
 	constructor(q) {
 		if (q === undefined) q = [0.0, 0.0, 0.0, 1.0];
 		assert(q.length === 4, 'Invalid input params for Quaternion constructor');
@@ -12,6 +45,17 @@ class Quaternion {
 		if (q[3] < 0) {
 			this.quat = this.quat.negate();
 		}
+	}
+
+	static dirToDir(dir1, dir2) {
+		let dir1p = new Vec3(dir1).normalize();
+		let dir2p = new Vec3(dir2).normalize();
+		let cosTheta = dir1p.dot(dir2p);
+		let theta = Math.acos(cosTheta);
+		let cs = Math.cos(theta / 2);
+		let sn = Math.sin(theta / 2);
+		let x = dir1p.cross(dir2p).normalize().scale(sn);
+		return new Quaternion([cs, ...x.vec]);
 	}
 
 	multiply(other) {
@@ -43,9 +87,20 @@ class Quaternion {
 		q[3] *= -1;
 		return new Quaternion(q);
 	}
+
+	matrix() {
+		let [qx, qy, qz, qw] = this.quat.values();
+        let m = [
+            [1 - 2 * Math.pow(qy, 2) - 2 * Math.pow(qz, 2), 2 * qx * qy - 2 * qz * qw, 2 * qx * qz + 2 * qy * qw, 0.0],
+            [2 * qx * qy + 2 * qz * qw, 1 - 2 * Math.pow(qx, 2) - 2 * Math.pow(qz, 2), 2 * qy * qz - 2 * qx * qw, 0.0],
+            [2 * qx * qz - 2 * qy * qw, 2 * qy * qz + 2 * qx * qw, 1 - 2 * Math.pow(qx, 2) - 2 * Math.pow(qy, 2), 0.0],
+            [0.0, 0.0, 0.0, 1.0]
+		];
+		return Mat4.create(m);
+	}
 }
 
-class Transformation {
+export class Transformation {
 	constructor(r, t, s) {
 		if (r === undefined) r = new Quaternion();
 		if (t === undefined) t = new Vec3();
@@ -54,11 +109,51 @@ class Transformation {
 		this.t = t;
 		this.s = s;
 	}
+	static fromTranslation(t) {
+		return new Transformation(undefined, new Vec3(t));
+	}
+
+	static fromScaling (s) {
+		return new Transformation(undefined, undefined, s);
+	}
+
+	static fromRotation (r) {
+		return new Transformation(new Quaternion(r));
+	}
+
+	static fromDirAlignment (dir1, dir2, origin) {
+		if (origin === undefined) origin = [0.0, 0.0, 0.0];
+		let rotation = Quaternion.dirToDir(dir1, dir2);
+		let to_origin = Transformation.fromTranslation(origin).inv();
+		let final = to_origin.inv().multiply(new Transformation(rotation)).multiply(to_origin);
+		return final;
+	}
 
 	multiply(other) {
-		let qp = this.r.multiply(other.r);
-		let vp = this.r.rotate(other.t).add(this.t.scale(1.0 / other.s));
-		return new Transformation(qp, vp, this.s * other.s);
+		if (other.constructor === Point) {
+			return this.r.rotate(other.ps).add(this.t).scale(this.s);
+		}
+		if (other.constructor === Vector) {
+			return this.r.rotate(other.vec).scale(this.s);
+		}
+		if (other.constructor === Direction) {
+			return this.r.rotate(other.dir);
+		}
+		if (other.constructor === Transformation) {
+			let qp = this.r.multiply(other.r);
+			let vp = this.r.rotate(other.t).add(this.t.scale(1.0 / other.s));
+			return new Transformation(qp, vp, this.s * other.s);
+		}
+		if (other.constructor === BoundingBox) {
+			let ret = [];
+			other.corners().forEach(p => {
+				ret.push([...this.multiply(p).vec])
+			})
+			return new BoundingBox.create(ret);
+		}
+		if (other.constructor === Number) {
+			return this.s * other;
+		}
 	}
 
 	inv() {
@@ -67,32 +162,13 @@ class Transformation {
 		let sp = 1.0 / this.s;
 		return new Transformation(qp, vp, sp);
 	}
-}
 
-export default transform = {
-	create: (r, t, s) => new Transformation(r, t, s),
-	fromTranslation: (t) => new Transformation(undefined, new Vec3(t)),
-	fromScaling: (s) => new Transformation(undefined, undefined, s),
-	fromRotation: (r) => new Transformation(new Quaternion(r)),
-	fromDirAlignment: (dir1, dir2, origin) => {
-		if (origin === undefined) origin = [0.0, 0.0, 0.0];
-		let rotation = quaternion.dirToDir(dir1, dir2);
-		let to_origin = transform.fromTranslation(origin).inv();
-		let final = to_origin.inv().multiply(new Transformation(rotation)).multiply(to_origin);
-		return final;
-	}
-}
-
-export var quaternion = {
-	create: () => new Quaternion(),
-	dirToDir: (dir1, dir2) => {
-		let dir1p = new Vec3(dir1).normalize();
-		let dir2p = new Vec3(dir2).normalize();
-		let cosTheta = dir1p.dot(dir2p);
-		let theta = Math.acos(cosTheta);
-		let cs = Math.cos(theta / 2);
-		let sn = Math.sin(theta / 2);
-		let x = dir1p.cross(dir2p).normalize().scale(sn);
-		return new Quaternion([cs, ...x.vec]);
+	matrix() {
+		let m = this.r.matrix();
+		m.set(0, 3, this.t.vec[0]);
+		m.set(1, 3, this.t.vec[1]);
+		m.set(2, 3, this.t.vec[2]);
+		m.set(3, 3, 1.0 / this.s);
+		return m;
 	}
 }

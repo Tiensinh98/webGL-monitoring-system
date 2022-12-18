@@ -1,20 +1,20 @@
 import {
-	transform as T,
-	quaternion
+	Transformation as T,
+	Quaternion
 } from './point.js';
 import { numpy as np } from './numpy.js';
-import Vec3 from './glmatrix.js';
+import { Vec3 } from './glmatrix.js';
 
-export default class Camera {
+export class Camera {
 	constructor() {
-		this.r = quaternion.create();
+		this.r = new Quaternion();
 		this.t = new Vec3();
 		this.s = 1.0;
 		this.viewport = [0, 0, 500, 500];
 	}
 
 	eyeFromModel() {
-		return T.create(this.r, this.t, this.s);
+		return new T(this.r, this.t, this.s);
 	}
 
 	eyeFromMouse() {
@@ -26,11 +26,11 @@ export default class Camera {
 		return T.multiply(this.eyeFromModel.inv(), this.eyeFromMouse());
 	}
 
-	zoom(scale, x, y) {
+	zoom(scale, xps, yps) {
 		const [x, y, width, height] = this.viewport;
 		const sx = width / 2 - x;
 		const sy = height / 2 - y;
-		let t = T.fromTranslation([sx, sy, 0]);
+		let t = T.fromTranslation([xps, yps, 0]);
 		let s = T.fromScaling(scale);
 		let tInv = T.fromTranslation([-sx, -sy, 0]);
 		let ret = tInv.multiply(s).multiply(t).multiply(this.eyeFromModel());

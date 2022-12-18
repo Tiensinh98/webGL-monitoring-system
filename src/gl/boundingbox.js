@@ -1,18 +1,22 @@
-import Vec3 from './glmatrix.js';
+import { Point } from './point.js';
 import { numpy as np } from './numpy.js';
 
-class BoundingBox {
+export class BoundingBox {
 	constructor(mn, mx) {
 		if (mn === undefined) mn = [0.0, 0.0, 0.0];
 		if (mx === undefined) mx = [0.0, 0.0, 0.0];
 		this.mn = mn;
-		this.mx = max;
+		this.mx = mx;
+	}
+
+	static create(arr) {
+		return new BoundingBox(np.min(arr, 0), np.max(arr, 0));
 	}
 
 	add(other) {
 		return new BoundingBox(
-			np.min([this.mn, other.mn], axis=0), 
-			np.max([this.mx, other.mx], axis=0)
+			np.min([this.mn, other.mn], 0), 
+			np.max([this.mx, other.mx], 0)
 		);
 	}
 
@@ -21,7 +25,7 @@ class BoundingBox {
 	}
 
 	center() {
-		return np.scale(np.add(this.mx, this.mn), 0.5);
+		return np.scale(np.sum([this.mx, this.mn], 0), 0.5);
 	}
 
 	radius() {
@@ -44,7 +48,7 @@ class BoundingBox {
 		];
 		let ret = [];
 		points.forEach(p => {
-			ret.push(new Vec3(p));
+			ret.push(new Point(p));
 		})
 		return ret;
 	}
@@ -52,10 +56,6 @@ class BoundingBox {
 	getScaled(factor) {
 		let center = this.center();
         let v = np.scale(np.subtract(this.mx, this.mn), (factor / 2.0))
-        return new BoundingBox(np.subtract(center, v), np.add(center, v));
+        return new BoundingBox(np.subtract(center, v), np.sum([center, v], 0));
 	}
-}
-
-export default boundingBox = {
-	create: (arr) => new BoundingBox(np.min(arr), np.max(arr))
 }
