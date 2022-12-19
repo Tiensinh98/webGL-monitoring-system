@@ -40,27 +40,28 @@ export class GLRenderer {
 	}
 
 	freeBuffers(gl, width, height) {
+		this.width = width; 
+		this.height = height;
 		gl.viewport(0, 0, width, height);
 	}
 
 	render(gl, camera, graphicsBody) {
-		this.freeBuffers(gl, this.canvas.width, this.canvas.height);
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		const [x, y, width, height] = camera.viewport;
+		this.freeBuffers(gl, width, height);
+		gl.clearColor(1.0, 1.0, 1.0, 0.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         gl.depthMask(gl.TRUE);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		const eyeFromModel = camera.eyeFromModel();
-		const [x, y, width, height] = camera.viewport;
-		gl.viewport(x, y, width, height);
 		let transformation = GLTransformation.create(
 			width, height, eyeFromModel, graphicsBody.bodyBuffer.boundingBox.getScaled(1.10));
 		const program = this.programMap[graphicsBody.shaderName];
 		gl.useProgram(program);
 		const locations = getShaderLocations(gl, program);
-		gl.uniformMatrix4fv(locations.ndcFromEye, false, transformation.ndcFromEye.mat);
-		gl.uniformMatrix4fv(locations.eyeFromLocal, false, eyeFromModel.matrix().mat);
+		gl.uniformMatrix4fv(locations.ndcFromEye, gl.TRUE, transformation.ndcFromEye.mat);
+		gl.uniformMatrix4fv(locations.eyeFromLocal, gl.TRUE, eyeFromModel.matrix().mat);
 		graphicsBody.render(gl, locations);
 		gl.useProgram(null);
 	}

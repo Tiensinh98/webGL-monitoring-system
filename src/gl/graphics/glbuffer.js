@@ -19,7 +19,7 @@ class Buffer {
     }
 
     static create(gl, array, target, attribInfo) {
-        const buffer = gl.createBuffer(1);
+        const buffer = gl.createBuffer();
         gl.bindBuffer(target, buffer);
         var srcData = new Float32Array(array);
         var type = gl.FLOAT;
@@ -60,18 +60,19 @@ export class BodyBuffer {
             else if (shapeIndices[1] === 2) primitiveMode = gl.LINES;
             else primitiveMode = gl.TRIANGLES;
         }
-        const indicesBuffer = Buffer.create(gl, indices, gl.ELEMENT_ARRAY_BUFFER);
+        debugger;
+        const indicesBuffer = Buffer.create(gl, np.flatten(indices), gl.ELEMENT_ARRAY_BUFFER);
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.buffer);
         gl.enableVertexAttribArray(vertexLoction);
-        gl.vertexAttribPointer(vertexLoction, 3, vertexBuffer.type, false, 0, 0);
+        gl.vertexAttribPointer(vertexLoction, 3, vertexBuffer.type, gl.FALSE, 0, 0);
 
         for (const [attribName, attribBuffer] of Object.entries(attribBuffers)) {
             gl.bindBuffer(attribBuffer.target, attribBuffer.buffer);
             gl.enableVertexAttribArray(attribInfos[attribName].location);
             gl.vertexAttribPointer(
-                attribInfos[attribName].location, attribInfos[attribName].nComponent, attribBuffer.type, false, 0, 0);
+                attribInfos[attribName].location, attribInfos[attribName].nComponent, attribBuffer.type, gl.FALSE, 0, 0);
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer.buffer);
         gl.bindVertexArray(null);

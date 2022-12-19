@@ -10,7 +10,7 @@ export class Camera {
 		this.r = new Quaternion();
 		this.t = new Vec3();
 		this.s = 1.0;
-		this.viewport = [0, 0, 500, 500];
+		this.viewport = [0, 0, 1920, 1080];
 	}
 
 	eyeFromModel() {
@@ -47,5 +47,24 @@ export class Camera {
 		var ret = this.eyeFromModel().multiply(r);
 		this.r = ret.r;
 		this.t = ret.t;
+	}
+
+	fit(bboxMin, bboxMax, scaling=true) {
+		let scale;
+		if (scaling === true) {
+            let radius = np.norm(np.scale(np.subtract(bboxMax, bboxMin), 0.5));
+            const [x, y, width, height] = this.viewport;
+            if (radius < 1e-20) scale = 1.0;
+            else scale = np.min([width, height]) / (radius * 2.0);
+		}
+		else {
+			scale = this.s;
+		}
+		let s = T.fromScaling(scale);
+        let r = new T(this.r);
+        let t = T.fromTranslation(np.scale(np.sum([bboxMin, bboxMax], 0), 0.5)).inv();
+        let newTransformation = s.multiply(r).multiply(t);
+        this.t = newTransformation.t;
+        this.s = newTransformation.s;
 	}
 }

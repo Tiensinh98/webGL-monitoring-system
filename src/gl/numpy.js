@@ -77,6 +77,7 @@ var sum = (arr, axis) => {
 	if (axis === undefined) {
 		return arr.reduce(
 			(a, b) => {
+				if (size.length === 1) return a + b;
 				let ta = a.reduce((a1, a2) => a1 + a2, 0);
 				let tb = b.reduce((b1, b2) => b1 + b2, 0);
 				return ta + tb;
@@ -127,6 +128,10 @@ var sqrt = (arr) => {
 	return m.map(e => Math.sqrt(e));
 }
 
+var norm = (arr) => {
+	return Math.sqrt(sum(square(arr)));
+}
+
 var flatten = (arr) => {
 	if (matrix(arr).size().length === 1) return arr;
 	let m = [];
@@ -141,7 +146,7 @@ var hypot = (dx, dy) => {
 }
 
 var distance = (arr1, arr2) => {
-	return Math.sqrt(sum(square(subtract(arr1, arr2)), axis=0));
+	return norm(subtract(arr1, arr2));
 }
 
 var getShape = (arr) => {
@@ -167,6 +172,7 @@ export var numpy = {
 	subtract: subtract,
 	square: square,
 	sqrt: sqrt,
+	norm: norm,
 	flatten: flatten,
 	hypot: hypot,
 	distance: distance,

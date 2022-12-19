@@ -52,9 +52,10 @@ export default class Canvas extends React.Component {
 
     handleWheelEvent(event) {
         var sx = event.deltaY / 1000;
+        this.props.camera.fit(this.graphicsBody.bodyBuffer.boundingBox.mn, this.graphicsBody.bodyBuffer.boundingBox.mx);
         this.setState((preState) => {
             var newState = {...preState};
-            newState.scale += sx;
+            // newState.scale += sx;
             return newState;
         })
     }
@@ -77,17 +78,13 @@ export default class Canvas extends React.Component {
     componentDidMount() {
         console.log("initializeGL ");
         var canvas = this.canvasRef.current;
-        this.state = {
-            width: canvas.width,
-            height: canvas.height
-        }
         const gl = canvas.getContext('webgl2');
         if (gl === null) {
             alert("Unable to initialize WebGL. Your browser or machine may not support it.");
             return;
         }
         this.graphicsBody = this.props.createGraphicsBody(gl);
-        let { x, y, width, height } = this.state;
+        const [x, y, width, height] = this.props.camera.viewport;
         this.glRenderer = GLRenderer.create(x, y, width, height, gl, this);
     }
 

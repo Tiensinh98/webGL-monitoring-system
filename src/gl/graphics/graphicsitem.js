@@ -21,7 +21,7 @@ const shininess = 100;
 const numberOfBins = colorRange.length;
 
 export const graphicsOptions = {
-	color: [0.0, 0.0, 0.0],
+	color: [1.0, 0.5, 0.4],
 	primitiveSize: 1.0,
 	pick: null
 }

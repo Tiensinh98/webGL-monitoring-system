@@ -91,11 +91,11 @@ export const scalarFieldFrag =
 export const vertexLoction = 0;
 
 export const attribInfos = {
-   'color': {
+   'normal': {
       nComponent: 3,
       location: 1
    },
-   'normal': {
+   'color': {
       nComponent: 3,
       location: 2
    },

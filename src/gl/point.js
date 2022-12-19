@@ -65,8 +65,9 @@ export class Quaternion {
                w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2,
                w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2,
 			   w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2];
-		let q = new Quaternion(tup);
-		return q;
+		let ret = new Quaternion();
+		ret.quat = new Quat(tup);
+		return ret;
 	}
 
 	rotate(t) {
@@ -85,7 +86,9 @@ export class Quaternion {
 	inv() {
 		let q = this.quat.values();
 		q[3] *= -1;
-		return new Quaternion(q);
+		let ret = new Quaternion();
+		ret.quat = new Quat(q);
+		return ret;
 	}
 
 	matrix() {
@@ -130,28 +133,28 @@ export class Transformation {
 	}
 
 	multiply(other) {
-		if (other.constructor === Point) {
+		if (other instanceof Point) {
 			return this.r.rotate(other.ps).add(this.t).scale(this.s);
 		}
-		if (other.constructor === Vector) {
+		if (other instanceof Vector) {
 			return this.r.rotate(other.vec).scale(this.s);
 		}
-		if (other.constructor === Direction) {
+		if (other instanceof Direction) {
 			return this.r.rotate(other.dir);
 		}
-		if (other.constructor === Transformation) {
+		if (other instanceof Transformation) {
 			let qp = this.r.multiply(other.r);
 			let vp = this.r.rotate(other.t).add(this.t.scale(1.0 / other.s));
 			return new Transformation(qp, vp, this.s * other.s);
 		}
-		if (other.constructor === BoundingBox) {
+		if (other instanceof BoundingBox) {
 			let ret = [];
 			other.corners().forEach(p => {
 				ret.push([...this.multiply(p).vec])
 			})
 			return new BoundingBox.create(ret);
 		}
-		if (other.constructor === Number) {
+		if (other instanceof Number) {
 			return this.s * other;
 		}
 	}

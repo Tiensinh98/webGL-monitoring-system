@@ -14,7 +14,7 @@ export default function App() {
         [-1.0, -1.0, 5.0],
         [1.0, -1.0, 5.0]
     ];
-    const values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
+    const values = [0.7, 0.2, 0.3, 0.0, 0.5, 0.43, 0.7, 0.1];
     const indices = [
         [0, 1, 2],
         [0, 2, 3],
@@ -29,11 +29,10 @@ export default function App() {
         [1, 0, 4],
         [1, 4, 5]
     ]
-    debugger;
     let camera = new Camera();
     let createGraphicsBody = (gl) => {
         let graphicsBody = GraphicsBody.create(
-            gl, vertices, indices, 'scalarField', values, null, {});
+            gl, vertices, indices, 'flat', undefined, undefined, {});
         return graphicsBody;
     }
     return <Canvas
