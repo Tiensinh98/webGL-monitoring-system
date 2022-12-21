@@ -2,13 +2,19 @@ import assert from 'assert';
 
 import {
 	Vec3, Quat, Mat4
-} from './glmatrix.js';
-import { BoundingBox } from './boundingbox.js';
+} from './gl_matrix.js';
+import { BoundingBox } from './bounding_box.js';
 
 export class Point {
 	constructor(ps) {
 		if (ps === undefined) ps = [0.0, 0.0, 0.0];
 		this.ps = new Vec3(ps);
+	}
+
+	static fromVec3(v) {
+		let ret = new Point();
+		ret.ps = v;
+		return ret;
 	}
 
 	scale(s) {
@@ -18,6 +24,18 @@ export class Point {
 
 	midPoint(other) {
 		return new Point([...this.ps.add(other.ps).scale(0.5).vec]);
+	}
+
+	add(other) {
+		return new Point([ ...this.ps.add(other.ps).vec]);
+	}
+
+	subtract(other) {
+		return new Point([ ...this.ps.subtract(other.ps).vec]);
+	}
+
+	get(index) {
+		return this.ps.get(index);
 	}
 }
 
@@ -30,10 +48,10 @@ export class Direction {
 	negate() {
 		return new Vec3(...this.dir.negate());
 	}
-}
 
-export class Vector extends Vec3 {
-
+	get(index) {
+		return this.dir.get(index);
+	}
 }
 
 export class Quaternion {
@@ -61,26 +79,33 @@ export class Quaternion {
 	multiply(other) {
 		let [ x1, y1, z1, w1 ] = this.quat.qvec;
         let [ x2, y2, z2, w2 ] = other.quat.qvec;
-        let tup = [w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
-               w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2,
-               w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2,
-			   w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2];
+        let tup = [
+			w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+            w1 * y2 + y1 * w2 + z1 * x2 - x1 * z2,
+            w1 * z2 + z1 * w2 + x1 * y2 - y1 * x2,
+			w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+		];
 		let ret = new Quaternion();
 		ret.quat = new Quat(tup);
 		return ret;
 	}
 
 	rotate(t) {
-		let v = t.vec;
+		const v0 = t.get(0);
+		const v1 = t.get(1);
+		const v2 = t.get(2);
 		let [qx, qy, qz, qw] = this.quat.values();
         let qw2 = qw * qw;
         let qx2 = qx * qx;
         let qy2 = qy * qy;
         let qz2 = qz * qz;
-        let vp0 = (qw2 + qx2 - qy2 - qz2) * v[0] + 2 * (qx * (qy * v[1] + qz * v[2]) + qw * (qy * v[2] - qz * v[1]));
-        let vp1 = (qw2 - qx2 + qy2 - qz2) * v[1] + 2 * (qy * (qz * v[2] + qx * v[0]) + qw * (qz * v[0] - qx * v[2]));
-        let vp2 = (qw2 - qx2 - qy2 + qz2) * v[2] + 2 * (qz * (qx * v[0] + qy * v[1]) + qw * (qx * v[1] - qy * v[0]));
-		return new Vec3([vp0, vp1, vp2]);
+        let vp0 = (qw2 + qx2 - qy2 - qz2) * v0 + 2 * (qx * (qy * v1 + qz * v2) + qw * (qy * v2 - qz * v1));
+        let vp1 = (qw2 - qx2 + qy2 - qz2) * v1 + 2 * (qy * (qz * v2 + qx * v0) + qw * (qz * v0 - qx * v2));
+        let vp2 = (qw2 - qx2 - qy2 + qz2) * v2 + 2 * (qz * (qx * v0 + qy * v1) + qw * (qx * v1 - qy * v0));
+		if (t instanceof Point) return new Point([vp0, vp1, vp2]);
+		else if (t instanceof Vec3) return new Vec3([vp0, vp1, vp2]);
+		else if (t instanceof Direction) return new Direction([vp0, vp1, vp2]);
+		return false;
 	}
 
 	inv() {
@@ -120,27 +145,34 @@ export class Transformation {
 		return new Transformation(undefined, undefined, s);
 	}
 
-	static fromRotation (r) {
-		return new Transformation(new Quaternion(r));
+	static fromRotation (angle, ax, cnt) {
+		let axis = new Direction(ax);
+        let center = new Point(cnt);
+        let c = Math.cos(angle / 2.0);
+		let s = Math.sin(angle / 2.0);
+        let t = Transformation.fromTranslation([...new Point().subtract(center).ps.vec]);
+        let q = new Transformation(new Quaternion([s * axis.get(0), s * axis.get(1), s * axis.get(2), c]));
+        let tp = new Transformation(t.r, t.t.negate(), t.s);
+        return tp.multiply(q).multiply(t);
 	}
 
 	static fromDirAlignment (dir1, dir2, origin) {
 		if (origin === undefined) origin = [0.0, 0.0, 0.0];
 		let rotation = Quaternion.dirToDir(dir1, dir2);
-		let to_origin = Transformation.fromTranslation(origin).inv();
-		let final = to_origin.inv().multiply(new Transformation(rotation)).multiply(to_origin);
+		let toOrigin = Transformation.fromTranslation(origin).inv();
+		let final = toOrigin.inv().multiply(new Transformation(rotation)).multiply(toOrigin);
 		return final;
 	}
 
 	multiply(other) {
 		if (other instanceof Point) {
-			return this.r.rotate(other.ps).add(this.t).scale(this.s);
+			return this.r.rotate(other).add(Point.fromVec3(this.t)).scale(this.s);
 		}
-		if (other instanceof Vector) {
-			return this.r.rotate(other.vec).scale(this.s);
+		if (other instanceof Vec3) {
+			return this.r.rotate(other).scale(this.s);
 		}
 		if (other instanceof Direction) {
-			return this.r.rotate(other.dir);
+			return this.r.rotate(other);
 		}
 		if (other instanceof Transformation) {
 			let qp = this.r.multiply(other.r);
@@ -150,7 +182,7 @@ export class Transformation {
 		if (other instanceof BoundingBox) {
 			let ret = [];
 			other.corners().forEach(p => {
-				ret.push([...this.multiply(p).vec])
+				ret.push([...this.multiply(p).ps.vec])
 			})
 			return new BoundingBox.create(ret);
 		}

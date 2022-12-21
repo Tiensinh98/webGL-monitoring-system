@@ -85,7 +85,7 @@ export const scalarFieldFrag =
       if(mapped_color.w < 0.5) {
          discard;
       }
-      fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      fragColor = mapped_color;
    }`;
 
 export const vertexLoction = 0;

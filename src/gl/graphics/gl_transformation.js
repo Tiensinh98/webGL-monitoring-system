@@ -3,7 +3,7 @@ import {
 	Point
 } from '../point.js';
 
-import { Mat4 } from '../glmatrix.js';
+import { Mat4 } from '../gl_matrix.js';
 
 export class GLTransformation {
 	constructor(ndcFromEye, ndcFromModel, eyeFromModel, eyeFromMouse, near, far, width, height) {
@@ -28,9 +28,9 @@ export class GLTransformation {
 
 	static getViewportEyeRect(width, height) {
 		const eyeFromMouse = GLTransformation.getEyeFromMouse(width, height);
-		const tl = eyeFromMouse.multiply(new Point([0.0, 0.0, 0.0])).vec;
-		const br = eyeFromMouse.multiply(new Point([width, height, 0.0])).vec;
-		return [tl[0], br[0], tl[1], br[1]];
+		const tl = eyeFromMouse.multiply(new Point([0.0, 0.0, 0.0]));
+		const br = eyeFromMouse.multiply(new Point([width, height, 0.0]));
+		return [tl.get(0), br.get(0), tl.get(1), br.get(1)];
 	}
 
 	static getNdcFromEye(left, right, bottom, top, eyeFromModel, boundingBox) {

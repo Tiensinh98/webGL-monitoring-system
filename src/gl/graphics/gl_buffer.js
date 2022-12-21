@@ -1,6 +1,6 @@
 import { vertexLoction, attribInfos } from '../shaders.js';
-import { numpy as np } from '../numpy.js';
-import { BoundingBox } from '../boundingbox.js';
+import { Numpy as np } from '../numpy.js';
+import { BoundingBox } from '../bounding_box.js';
 
 var buffersToDelete = [];
 var vaosToDelete = [];
@@ -60,7 +60,6 @@ export class BodyBuffer {
             else if (shapeIndices[1] === 2) primitiveMode = gl.LINES;
             else primitiveMode = gl.TRIANGLES;
         }
-        debugger;
         const indicesBuffer = Buffer.create(gl, np.flatten(indices), gl.ELEMENT_ARRAY_BUFFER);
         const vao = gl.createVertexArray();
         gl.bindVertexArray(vao);

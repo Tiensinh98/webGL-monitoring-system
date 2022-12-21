@@ -163,7 +163,7 @@ var linspace = (mn, mx, interval) => {
 	return ret;
 }
 
-export var numpy = {
+export var Numpy = {
 	fromMat: fromMat,
 	min: min,
 	max: max,

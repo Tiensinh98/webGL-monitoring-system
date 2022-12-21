@@ -1,5 +1,5 @@
-import { BodyBuffer } from './glbuffer.js';
-import { numpy as np } from '../numpy.js';
+import { BodyBuffer } from './gl_buffer.js';
+import { Numpy as np } from '../numpy.js';
 
 const colorRange = [
 	[0.0, 0.0, 0.7],
@@ -21,7 +21,7 @@ const shininess = 100;
 const numberOfBins = colorRange.length;
 
 export const graphicsOptions = {
-	color: [1.0, 0.5, 0.4],
+	color: [0.0, 0.0, 0.0],
 	primitiveSize: 1.0,
 	pick: null
 }
@@ -42,6 +42,7 @@ export class GraphicsBody {
 				'scalar_value': scalarValues
 			};
 		}
+		if (options === undefined) options = graphicsOptions;
 		const bodyBuffer = BodyBuffer.create(gl, vertices, attribValues, indices);
 		return new GraphicsBody(
 			bodyBuffer, shaderName, parentFromBody, scalarValues, { ...graphicsOptions, ...options});
@@ -55,7 +56,8 @@ export class GraphicsBody {
 			gl.uniform3f(locations.color, ...this.options.color);
 		}
 		else {
-			gl.uniform3fv(locations.colorRange, new Float32Array(np.flatten(colorRange)), 0, colorRange.length * 3);
+			const colorRangeFlat = np.flatten(colorRange);
+			gl.uniform3fv(locations.colorRange, new Float32Array(colorRangeFlat), 0, colorRangeFlat.length);
 			let min = np.min(this.scalarValues);
 			let max = np.max(this.scalarValues);
             gl.uniform1f(locations.minValue, min);

@@ -1,16 +1,17 @@
 import {
 	Transformation as T,
-	Quaternion
-} from './point.js';
-import { numpy as np } from './numpy.js';
-import { Vec3 } from './glmatrix.js';
+	Quaternion,
+	Direction
+} from './gl/point.js';
+import { Numpy as np } from './gl/numpy.js';
+import { Vec3 } from './gl/gl_matrix.js';
 
 export class Camera {
 	constructor() {
 		this.r = new Quaternion();
 		this.t = new Vec3();
 		this.s = 1.0;
-		this.viewport = [0, 0, 1920, 1080];
+		this.viewport = [0, 0, 642, 417];
 	}
 
 	eyeFromModel() {
@@ -23,14 +24,14 @@ export class Camera {
 	}
 
 	modelFromMouse() {
-		return T.multiply(this.eyeFromModel.inv(), this.eyeFromMouse());
+		return this.eyeFromModel().inv().multiply(this.eyeFromMouse());
 	}
 
 	zoom(scale, xps, yps) {
 		const [x, y, width, height] = this.viewport;
-		const sx = width / 2 - x;
-		const sy = height / 2 - y;
-		let t = T.fromTranslation([xps, yps, 0]);
+		const sx = width / 2 - xps;
+		const sy = height / 2 - yps;
+		let t = T.fromTranslation([sx, sy, 0]);
 		let s = T.fromScaling(scale);
 		let tInv = T.fromTranslation([-sx, -sy, 0]);
 		let ret = tInv.multiply(s).multiply(t).multiply(this.eyeFromModel());
@@ -39,12 +40,12 @@ export class Camera {
 	}
 
 	rotate(dx, dy, center=[0.0, 0.0, 0.0]) {
-		if (dy === 0 && dx === 0) return
+		if (dy === 0 && dx === 0) return;
 		const height = this.viewport[3];
 		const theta = np.hypot(dx, dy) * 4.0 / height;
-		var t = this.modelFromMouse().multiply(T.fromTranslation([-dy, dx, 0.0]));
-		var r = T.fromRotation(theta, t.t.vec, center);
-		var ret = this.eyeFromModel().multiply(r);
+		let modelDir = this.modelFromMouse().multiply(new Direction([-dy, dx, 0.0]));
+		let rotation = T.fromRotation(theta, [...modelDir.dir.vec], center);
+		let ret = this.eyeFromModel().multiply(rotation);
 		this.r = ret.r;
 		this.t = ret.t;
 	}

@@ -2,7 +2,7 @@ import {
 	vec3, mat4,
 	quat, vec4
 } from 'gl-matrix';
-import { numpy as np } from './numpy.js';
+import { Numpy as np } from './numpy.js';
 
 
 export class Vec3 {
@@ -51,6 +51,11 @@ export class Vec3 {
 		vec3.negate(ret, this.vec);
 		return new Vec3(ret);
 	}
+
+	get(index) {
+		if (index < 0 || index > 2) return null;
+		return this.vec[index];
+	}
 }
 
 export class Vec4 {
@@ -93,6 +98,9 @@ export class Mat4 {
 		if (Array.isArray(mat)) {
 			matrix = mat4.fromValues(...np.flatten(mat));
 		}
+		else if (mat === undefined) {
+			matrix = mat4.create();
+		}
 		else {
 			matrix = mat;
 		}
@@ -111,13 +119,13 @@ export class Mat4 {
 	transpose() {
 		let m = mat4.create();
 		mat4.transpose(m, m);
-		return new Mat4(np.fromMat(m));
+		return new Mat4(m);
 	}
 
 	multiply(other) {
 		let m = mat4.create();
 		mat4.multiply(m, this.mat, other.mat);
-		return new Mat4(np.fromMat(m));
+		return new Mat4(m);
 	}
 
 	set(row, col, value) {
@@ -127,7 +135,7 @@ export class Mat4 {
 
 export class Quat {
 	constructor(qvec) {
-		this.length = qvec.length;
+		if (qvec === undefined) qvec = [0.0, 0.0, 0.0, 1.0];
 		this.qvec = quat.fromValues(...qvec);
 	}
 
@@ -142,8 +150,10 @@ export class Quat {
 	}
 
 	negate() {
-		let quat = quat.create();
-		vec4.negate(quat, this.qvec);
-		return new Quat(quat);
+		let q = quat.create();
+		vec4.negate(q, this.qvec);
+		let ret = new Quat();
+		ret.qvec = q;
+		return ret;
 	}
 }

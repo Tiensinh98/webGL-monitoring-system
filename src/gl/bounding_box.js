@@ -1,5 +1,5 @@
 import { Point } from './point.js';
-import { numpy as np } from './numpy.js';
+import { Numpy as np } from './numpy.js';
 
 export class BoundingBox {
 	constructor(mn, mx) {

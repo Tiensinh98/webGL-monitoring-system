@@ -1,103 +1,91 @@
 import React from 'react';
-import { GLRenderer } from '../../gl/graphics/glrenderer.js';
+import { GLRenderer } from '../../gl/graphics/gl_renderer.js';
 
 export default class Canvas extends React.Component {
     constructor(props) {
         super(props);
-        let [x, y, width, height] = this.props.camera.viewport;
-        this.state = {
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        };
+        this.lastMousePosition = [0, 0];
+        this.button = 0;
+        this.state = {};
         this.canvasRef = React.createRef();
-        this.handleResizeEvent = this.handleResizeEvent.bind(this);
-        this.handleMouseMoveEvent = this.handleMouseMoveEvent.bind(this);
-        this.handleWheelEvent = this.handleWheelEvent.bind(this);
-        this.resizeGL = this.resizeGL.bind(this);
-        window.addEventListener("resize", this.handleResizeEvent);
-    }
-
-    resizeGL(width, height) {
-        // console.log(`resize (${width}, ${height})`);
-        // var canvas = this.canvasRef.current;
-        // const gl = canvas.getContext('webgl2');
-        // gl.clearColor(1.0, 1.0, 1.0, 1.0);
-        // gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-        // const aspect = this.state.width / this.state.height;
-        // gl.useProgram(this.programInfo.program);
-        // var projMat = mat4.create();
-        // const diag = Math.sqrt(3);
-        // mat4.ortho(projMat, -aspect * diag, aspect * diag, -diag, diag, -1000, 1000);
-        // const uniformLocs = this.programInfo.uniformLocations;
-        // const viewMat = mat4.create();
-        // gl.uniformMatrix4fv(uniformLocs.projection, false, projMat);
-        // gl.uniformMatrix4fv(uniformLocs.model_view, false, viewMat);
-        // gl.useProgram(null);
-    }
-
-    handleResizeEvent() {
-        // const width = window.innerWidth;
-        // const height = window.innerHeight;
-        // this._resizeGL(width, height);
-        // // handle resizeGL before rerendering
-        // this.setState((preState) => {
-        //     var newState = {...preState};
-        //     newState.width = width;
-        //     newState.height = height;
-        //     return newState;
-        // });
-    }
-
-    handleWheelEvent(event) {
-        var sx = event.deltaY / 1000;
-        this.props.camera.fit(this.graphicsBody.bodyBuffer.boundingBox.mn, this.graphicsBody.bodyBuffer.boundingBox.mx);
-        this.setState((preState) => {
-            var newState = {...preState};
-            // newState.scale += sx;
-            return newState;
-        })
-    }
-
-    handleMouseMoveEvent(event) {
-        console.log("mouseMove " + event);
-    }
-
-    handleMouseDownEvent(event) {
-        console.log("mouseDown " + event);
+        this.handleViewFit = this.handleViewFit.bind(this);
+        this.handleZoom = this.handleZoom.bind(this);
+        this.handleRotate = this.handleRotate.bind(this);
     }
 
     componentDidUpdate() {
-        console.log("Updating...");
-        var canvas = this.canvasRef.current;
+        console.log('Updating...');
+        const canvas = this.canvasRef.current;
         const gl = canvas.getContext('webgl2');
-        this.glRenderer.render(gl, this.props.camera, this.graphicsBody);
+        const [x, y, width, height] = this.uiState.viewport();
+        let eyeFromModel = this.uiState.camera.eyeFromModel();
+        let graphicsLayers = this.uiState.graphicsWindow.graphicsLayers();
+        this.glRenderer.render(gl, x, y, width, height, eyeFromModel, graphicsLayers);
     }
 
     componentDidMount() {
-        console.log("initializeGL ");
         var canvas = this.canvasRef.current;
         const gl = canvas.getContext('webgl2');
         if (gl === null) {
             alert("Unable to initialize WebGL. Your browser or machine may not support it.");
             return;
         }
-        this.graphicsBody = this.props.createGraphicsBody(gl);
-        const [x, y, width, height] = this.props.camera.viewport;
+        this.props.getGLContext(gl);
+        this.uiState = this.props.uiState();
+        const [x, y, width, height] = this.uiState.viewport();
         this.glRenderer = GLRenderer.create(x, y, width, height, gl, this);
+        this.setState({
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        });
+    }
+
+    handleViewFit() {
+        this.uiState.viewFit();
+        this.setState(prevState => prevState);
+    }
+
+    handleZoom(event) {
+        let scale = event.deltaY / 2000;
+        this.uiState.zoom(1.0 + scale, this.state.width / 2, this.state.height / 2);
+        this.setState(prevState => prevState);
+    }
+
+    handleRotate(event) {
+        if (this.button === 1) {
+            const [screenX, screenY] = this.lastMousePosition;
+            const dx = event.screenX - screenX;
+            const dy = screenY - event.screenY;
+            this.uiState.rotate(dx, dy);
+            this.setState(prevState => prevState);
+        }
+        this.lastMousePosition = [event.screenX, event.screenY];
     }
 
     render() {
         return (
-            <canvas
-                ref={this.canvasRef}
-                width={this.state.width}
-                height={this.state.height}
-                onWheel={this.handleWheelEvent}
-                onMouseMove={this.handleMouseMoveEvent}
-                onMouseDown={this.handleMouseDownEvent}>
-            </canvas>
+            <div>
+                <button onClick={this.handleViewFit}>View Fit</button>
+                <canvas
+                    ref={this.canvasRef}
+                    width={this.state.width ? this.state.width : 642}
+                    height={this.state.height ? this.state.height : 417}
+                    onWheel={this.handleZoom}
+                    onMouseDown={(event) => {
+                        this.lastMousePosition = [event.screenX, event.screenY];
+                        this.button = event.button;
+                        }
+                    }
+                    onMouseMove={this.handleRotate}
+                    onMouseUp={() => {
+                        this.button = 0;
+                        }
+                    }
+                >
+                </canvas>
+            </div>
         );
     }
 }
