@@ -179,13 +179,6 @@ export class Transformation {
 			let vp = this.r.rotate(other.t).add(this.t.scale(1.0 / other.s));
 			return new Transformation(qp, vp, this.s * other.s);
 		}
-		if (other instanceof BoundingBox) {
-			let ret = [];
-			other.corners().forEach(p => {
-				ret.push([...this.multiply(p).ps.vec])
-			})
-			return new BoundingBox.create(ret);
-		}
 		if (other instanceof Number) {
 			return this.s * other;
 		}

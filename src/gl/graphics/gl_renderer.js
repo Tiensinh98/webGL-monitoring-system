@@ -58,15 +58,13 @@ export class GLRenderer {
 			let graphicsBodies = graphicsLayer.graphicsBodies();
 			let transformation = GLTransformation.create(
 				width, height, eyeFromModel, graphicsLayer.boundingBox.getScaled(5.0));
-			console.log(transformation.near);
-			console.log(transformation.far);
 			graphicsBodies.forEach(graphicsBody => {
 				const program = this.programMap[graphicsBody.shaderName];
 				gl.useProgram(program);
 				const locations = getShaderLocations(gl, program);
 				gl.uniformMatrix4fv(locations.ndcFromEye, gl.TRUE, transformation.ndcFromEye.mat);
 				gl.uniformMatrix4fv(locations.eyeFromLocal, gl.TRUE, eyeFromModel.matrix().mat);
-				gl.uniform1i(locations.discreteColors, 0);
+				gl.uniform1i(locations.discreteColors, this.canvas.state.isDescreteColors);
 				graphicsBody.render(gl, locations);
 				gl.useProgram(null);
 			})

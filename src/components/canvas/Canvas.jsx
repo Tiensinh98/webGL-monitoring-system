@@ -1,3 +1,4 @@
+import { CheckBox } from '@material-ui/icons';
 import React from 'react';
 import { GLRenderer } from '../../gl/graphics/gl_renderer.js';
 
@@ -5,8 +6,10 @@ export default class Canvas extends React.Component {
     constructor(props) {
         super(props);
         this.lastMousePosition = [0, 0];
-        this.button = 0;
-        this.state = {};
+        this.button = null;
+        this.state = {
+            isDescreteColors: 0
+        };
         this.canvasRef = React.createRef();
         this.handleViewFit = this.handleViewFit.bind(this);
         this.handleZoom = this.handleZoom.bind(this);
@@ -14,13 +17,16 @@ export default class Canvas extends React.Component {
     }
 
     componentDidUpdate() {
-        console.log('Updating...');
         const canvas = this.canvasRef.current;
         const gl = canvas.getContext('webgl2');
         const [x, y, width, height] = this.uiState.viewport();
         let eyeFromModel = this.uiState.camera.eyeFromModel();
         let graphicsLayers = this.uiState.graphicsWindow.graphicsLayers();
         this.glRenderer.render(gl, x, y, width, height, eyeFromModel, graphicsLayers);
+        window.requestAnimationFrame(() => {
+            this.uiState.rotate(Math.random(), -Math.random());
+            this.setState(prevState => prevState);
+        });
     }
 
     componentDidMount() {
@@ -54,7 +60,7 @@ export default class Canvas extends React.Component {
     }
 
     handleRotate(event) {
-        if (this.button === 1) {
+        if (this.button === 0) {
             const [screenX, screenY] = this.lastMousePosition;
             const dx = event.screenX - screenX;
             const dy = screenY - event.screenY;
@@ -70,17 +76,19 @@ export default class Canvas extends React.Component {
                 <button onClick={this.handleViewFit}>View Fit</button>
                 <canvas
                     ref={this.canvasRef}
-                    width={this.state.width ? this.state.width : 642}
-                    height={this.state.height ? this.state.height : 417}
+                    width={this.state.width !==undefined ? this.state.width : 642}
+                    height={this.state.height !==undefined ? this.state.height : 417}
                     onWheel={this.handleZoom}
-                    onMouseDown={(event) => {
-                        this.lastMousePosition = [event.screenX, event.screenY];
-                        this.button = event.button;
+                    onMouseDown= {
+                        (event) => {
+                            this.lastMousePosition = [event.screenX, event.screenY];
+                            this.button = event.button;
                         }
                     }
                     onMouseMove={this.handleRotate}
-                    onMouseUp={() => {
-                        this.button = 0;
+                    onMouseUp= {
+                        () => {
+                            this.button = null;
                         }
                     }
                 >

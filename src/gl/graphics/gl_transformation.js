@@ -47,7 +47,7 @@ export class GLTransformation {
 	}
 
 	static getNearFar(eyeFromModel, boundingBox) {
-		let eyeBox = eyeFromModel.multiply(boundingBox);
+		let eyeBox = boundingBox.rightMultiply(eyeFromModel);
 		return [eyeBox.mn[2], eyeBox.mx[2]];
 	}
 

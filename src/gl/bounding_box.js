@@ -1,4 +1,4 @@
-import { Point } from './point.js';
+import { Point, Transformation as T } from './point.js';
 import { Numpy as np } from './numpy.js';
 
 export class BoundingBox {
@@ -11,6 +11,14 @@ export class BoundingBox {
 
 	static create(arr) {
 		return new BoundingBox(np.min(arr, 0), np.max(arr, 0));
+	}
+
+	rightMultiply(transformation) {
+		let ret = [];
+		this.corners().forEach(p => {
+			ret.push([...transformation.multiply(p).ps.vec])
+		})
+		return new BoundingBox.create(ret);
 	}
 
 	add(other) {
