@@ -163,6 +163,67 @@ var linspace = (mn, mx, interval) => {
 	return ret;
 }
 
+var reshape = (arr, targetSize) => {
+	let m = matrix(arr);
+	if (m.size().length !== 1) {
+		m = matrix(flatten(arr));
+	}
+	else {
+		m = m();
+		if (m.length % targetSize[1] !== 0) {
+			assert(`Array with size of ${m.length} can not be reshaped into ${targetSize}`);
+		}
+		else {
+			let ret = [];
+			let temp = [];
+			console.log(m);
+			m.forEach((element, idx) => {
+				if ((idx + 1) % targetSize[1] !== 0) {
+					temp.push(element);
+				}
+				else {
+					temp.push(element);
+					ret.push(temp);
+					temp = [];
+				}
+			})
+			return ret;
+		}
+	}
+}
+
+var load = (filepath, parseFunc, size, callback=null) => {
+	try {
+		let ret = [];
+		let temp = [];
+		const data = fs.readFileSync(filepath, 'utf8');
+		const dataSplit = data.split(',');
+		let err;
+		if (dataSplit.length % size !== 0) {
+			err = "Invalid size";
+		}
+		for (let i = 0; i < dataSplit.length - 1; i++) {
+			const parseData = parseFunc(dataSplit[i]);
+			if (size === 1) {
+				ret.push(parseData);
+			}
+			else {
+				temp.push(parseData);
+				if (temp.length === size) {
+					ret.push(temp);
+					temp = [];
+				}
+			}
+		}
+		if (callback !== null) {
+			callback(err, ret);
+		}
+	}
+	catch (err) {
+		console.error(err);
+	}
+}
+
 export var Numpy = {
 	fromMat: fromMat,
 	min: min,
@@ -177,6 +238,8 @@ export var Numpy = {
 	hypot: hypot,
 	distance: distance,
 	getShape: getShape,
-	linspace: linspace
+	linspace: linspace,
+	reshape: reshape,
+	load: load
 }
 
