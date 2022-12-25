@@ -1,4 +1,3 @@
-import { CheckBox } from '@material-ui/icons';
 import React from 'react';
 import { GLRenderer } from '../../gl/graphics/gl_renderer.js';
 
@@ -21,12 +20,15 @@ export default class Canvas extends React.Component {
         const gl = canvas.getContext('webgl2');
         const [x, y, width, height] = this.uiState.viewport();
         let eyeFromModel = this.uiState.camera.eyeFromModel();
-        let graphicsLayers = this.uiState.graphicsWindow.graphicsLayers();
-        this.glRenderer.render(gl, x, y, width, height, eyeFromModel, graphicsLayers);
-        window.requestAnimationFrame(() => {
-            this.uiState.rotate(Math.random(), -Math.random());
-            this.setState(prevState => prevState);
-        });
+        let graphicsWindow = this.uiState.graphicsWindow;
+        if (graphicsWindow !== null) {
+            let graphicsLayers = graphicsWindow.graphicsLayers();
+            this.glRenderer.render(gl, x, y, width, height, eyeFromModel, graphicsLayers);
+            window.requestAnimationFrame(() => {
+                this.uiState.rotate(Math.random(), -Math.random());
+                this.setState(prevState => prevState);
+            });
+        };
     }
 
     componentDidMount() {
@@ -86,12 +88,11 @@ export default class Canvas extends React.Component {
                         }
                     }
                     onMouseMove={this.handleRotate}
-                    onMouseUp= {
+                    onMouseUp={
                         () => {
                             this.button = null;
                         }
-                    }
-                >
+                    }>
                 </canvas>
             </div>
         );

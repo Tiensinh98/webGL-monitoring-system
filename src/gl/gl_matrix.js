@@ -56,6 +56,13 @@ export class Vec3 {
 		if (index < 0 || index > 2) return null;
 		return this.vec[index];
 	}
+
+	*[Symbol.iterator]() {
+		for (let i = 0; i < this.vec.length; i++) {
+			yield this.vec[i];
+		}
+		
+	}
 }
 
 export class Vec4 {

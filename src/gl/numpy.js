@@ -17,23 +17,39 @@ var fromMat = (mat) => {
 	return ret;
 }
 
+var find_min_1d_array = (arr) => {
+	let ret = arr[0];
+	arr.forEach(element => {
+		if (element < ret) ret = element;
+	})
+	return ret;
+}
+
+var find_max_1d_array = (arr) => {
+	let ret = arr[0];
+	arr.forEach(element => {
+		if (element > ret) ret = element;
+	})
+	return ret;
+}
+
 var min = (arr, axis) => {
 	const m = matrix(arr);
 	const size = m.size();
 	let ret = [];
 	if (axis === undefined) {
-		return Math.min(...flatten(arr));
+		return find_min_1d_array(flatten(arr));
 	}
 	else if (axis === 0) {
 		for (let i = 0; i < size[1]; i ++) {
 			let column = m([], i);
-			ret.push(Math.min(...column));
+			ret.push(min(column));
 		}
 		return ret;
 	}
 	else if (axis === 1) {
 		for (let i = 0; i < size[0]; i ++) {
-			ret.push(Math.min(...m(i)));
+			ret.push(min(m(i)));
 		}
 		return ret;
 	}
@@ -46,18 +62,18 @@ var max = (arr, axis) => {
 	const size = m.size();
 	let ret = [];
 	if (axis === undefined) {
-		return Math.max(...flatten(arr));
+		return find_max_1d_array(flatten(arr));
 	}
 	else if (axis === 0) {
 		for (let i = 0; i < size[1]; i ++) {
 			let column = m([], i);
-			ret.push(Math.max(...column));
+			ret.push(max(column));
 		}
 		return ret;
 	}
 	else if (axis === 1) {
 		for (let i = 0; i < size[0]; i ++) {
-			ret.push(Math.max(...m(i)));
+			ret.push(max(m(i)));
 		}
 		return ret;
 	}
@@ -129,6 +145,7 @@ var sqrt = (arr) => {
 }
 
 var norm = (arr) => {
+	debugger;
 	return Math.sqrt(sum(square(arr)));
 }
 
@@ -136,7 +153,7 @@ var flatten = (arr) => {
 	if (matrix(arr).size().length === 1) return arr;
 	let m = [];
 	arr.forEach((element) => {
-		m = [...m, ...element];
+		element.forEach(value => m.push(value));
 	});
 	return m;
 }
@@ -154,7 +171,6 @@ var getShape = (arr) => {
 }
 
 var linspace = (mn, mx, interval) => {
-	assert(mn < mx, 'Min must be smaller than max');
 	let delta = (mx - mn) / (interval - 1);
 	let ret = [];
 	for (let i = 0; i <= interval - 1; i++) {
@@ -192,12 +208,11 @@ var reshape = (arr, targetSize) => {
 	}
 }
 
-var load = (filepath, parseFunc, size, callback=null) => {
+var load = (stringData, parseFunc, size, callback=null) => {
 	try {
 		let ret = [];
 		let temp = [];
-		const data = fs.readFileSync(filepath, 'utf8');
-		const dataSplit = data.split(',');
+		const dataSplit = stringData.split(',');
 		let err;
 		if (dataSplit.length % size !== 0) {
 			err = "Invalid size";
@@ -215,9 +230,10 @@ var load = (filepath, parseFunc, size, callback=null) => {
 				}
 			}
 		}
-		if (callback !== null) {
-			callback(err, ret);
-		}
+		// if (callback !== null) {
+		// 	callback(err, ret);
+		// }
+		return ret;
 	}
 	catch (err) {
 		console.error(err);

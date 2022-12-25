@@ -53,6 +53,7 @@ export class Camera {
 	fit(bboxMin, bboxMax, scaling=true) {
 		let scale;
 		if (scaling === true) {
+			debugger;
             let radius = np.norm(np.scale(np.subtract(bboxMax, bboxMin), 0.5));
             const [x, y, width, height] = this.viewport;
             if (radius < 1e-20) scale = 1.0;

@@ -6,6 +6,10 @@ export class UiState {
         this.camera = new Camera();
     }
 
+    setGraphicsWindow(graphicsWindow) {
+        this.graphicsWindow = graphicsWindow;
+    }
+
     viewFit() {
         let boundingBox = this.graphicsWindow.boundingBox;
         this.camera.fit(boundingBox.mn, boundingBox.mx);
