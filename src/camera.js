@@ -1,7 +1,8 @@
 import {
 	Transformation as T,
 	Quaternion,
-	Direction
+	Direction,
+	Vector
 } from './gl/point.js';
 import { Numpy as np } from './gl/numpy.js';
 import { Vec3 } from './gl/gl_matrix.js';
@@ -9,7 +10,7 @@ import { Vec3 } from './gl/gl_matrix.js';
 export class Camera {
 	constructor() {
 		this.r = new Quaternion();
-		this.t = new Vec3();
+		this.t = new Vector();
 		this.s = 1.0;
 		this.viewport = [0, 0, 642, 417];
 	}
@@ -43,8 +44,8 @@ export class Camera {
 		if (dy === 0 && dx === 0) return;
 		const height = this.viewport[3];
 		const theta = np.hypot(dx, dy) * 4.0 / height;
-		let modelDir = this.modelFromMouse().multiply(new Direction([-dy, dx, 0.0]));
-		let rotation = T.fromRotation(theta, [...modelDir.dir.vec], center);
+		let modelDir = this.modelFromMouse().multiply(new Direction(new Vec3(-dy, dx, 0.0)));
+		let rotation = T.fromRotation(theta, modelDir, center);
 		let ret = this.eyeFromModel().multiply(rotation);
 		this.r = ret.r;
 		this.t = ret.t;
@@ -53,7 +54,6 @@ export class Camera {
 	fit(bboxMin, bboxMax, scaling=true) {
 		let scale;
 		if (scaling === true) {
-			debugger;
             let radius = np.norm(np.scale(np.subtract(bboxMax, bboxMin), 0.5));
             const [x, y, width, height] = this.viewport;
             if (radius < 1e-20) scale = 1.0;

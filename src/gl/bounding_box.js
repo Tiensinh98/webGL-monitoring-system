@@ -1,4 +1,5 @@
 import { Point, Transformation as T } from './point.js';
+import { Vec3 } from './gl_matrix.js';
 import { Numpy as np } from './numpy.js';
 
 export class BoundingBox {
@@ -16,7 +17,7 @@ export class BoundingBox {
 	rightMultiply(transformation) {
 		let ret = [];
 		this.corners().forEach(p => {
-			ret.push([...transformation.multiply(p).ps.vec])
+			ret.push([...transformation.multiply(p)])
 		})
 		return new BoundingBox.create(ret);
 	}
@@ -56,7 +57,7 @@ export class BoundingBox {
 		];
 		let ret = [];
 		points.forEach(p => {
-			ret.push(new Point(p));
+			ret.push(new Point(new Vec3(...p)));
 		})
 		return ret;
 	}

@@ -57,7 +57,8 @@ export class GLRenderer {
 		graphicsLayers.forEach(graphicsLayer => {
 			let graphicsBodies = graphicsLayer.graphicsBodies();
 			let transformation = GLTransformation.create(
-				width, height, eyeFromModel, graphicsLayer.boundingBox.getScaled(5.0));
+				width, height, eyeFromModel, graphicsLayer.boundingBox.getScaled(1.10));
+			debugger;
 			graphicsBodies.forEach(graphicsBody => {
 				const program = this.programMap[graphicsBody.shaderName];
 				gl.useProgram(program);

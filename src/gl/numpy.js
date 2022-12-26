@@ -145,7 +145,6 @@ var sqrt = (arr) => {
 }
 
 var norm = (arr) => {
-	debugger;
 	return Math.sqrt(sum(square(arr)));
 }
 

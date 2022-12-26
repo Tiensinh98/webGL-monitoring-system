@@ -3,7 +3,7 @@ import {
 	Point
 } from '../point.js';
 
-import { Mat4 } from '../gl_matrix.js';
+import { Vec3, Mat4 } from '../gl_matrix.js';
 
 export class GLTransformation {
 	constructor(ndcFromEye, ndcFromModel, eyeFromModel, eyeFromMouse, near, far, width, height) {
@@ -19,6 +19,7 @@ export class GLTransformation {
 
 	static create(width, height, eyeFromModel, boundingBox) {
 		const eyeFromModelMat = eyeFromModel.matrix();
+		debugger;
 		const [left, right, bottom, top] = GLTransformation.getViewportEyeRect(width, height);
 		const [near, far, ndcFromEye] = GLTransformation.getNdcFromEye(left, right, bottom, top, eyeFromModel, boundingBox);
 		const eyeFromMouse = GLTransformation.getEyeFromMouse(width, height);
@@ -28,8 +29,8 @@ export class GLTransformation {
 
 	static getViewportEyeRect(width, height) {
 		const eyeFromMouse = GLTransformation.getEyeFromMouse(width, height);
-		const tl = eyeFromMouse.multiply(new Point([0.0, 0.0, 0.0]));
-		const br = eyeFromMouse.multiply(new Point([width, height, 0.0]));
+		const tl = eyeFromMouse.multiply(new Point(new Vec3(0.0, 0.0, 0.0)));
+		const br = eyeFromMouse.multiply(new Point(new Vec3(width, height, 0.0)));
 		return [tl.get(0), br.get(0), tl.get(1), br.get(1)];
 	}
 
@@ -43,7 +44,7 @@ export class GLTransformation {
 	}
 
 	static getEyeFromMouse(width, height) {
-		return T.fromTranslation( [- width / 2, - height / 2, 0.0]);
+		return T.fromTranslation([- width / 2, - height / 2, 0.0]);
 	}
 
 	static getNearFar(eyeFromModel, boundingBox) {

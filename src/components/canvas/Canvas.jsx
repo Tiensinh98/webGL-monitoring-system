@@ -24,10 +24,10 @@ export default class Canvas extends React.Component {
         if (graphicsWindow !== null) {
             let graphicsLayers = graphicsWindow.graphicsLayers();
             this.glRenderer.render(gl, x, y, width, height, eyeFromModel, graphicsLayers);
-            window.requestAnimationFrame(() => {
-                this.uiState.rotate(Math.random(), -Math.random());
-                this.setState(prevState => prevState);
-            });
+            // window.requestAnimationFrame(() => {
+            //     this.uiState.rotate(Math.random(), -Math.random());
+            //     this.setState(prevState => prevState);
+            // });
         };
     }
 
