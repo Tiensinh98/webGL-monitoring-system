@@ -24,8 +24,10 @@ class Buffer {
         var srcData = new Float32Array(array);
         var type = gl.FLOAT;
         if (target == gl.ELEMENT_ARRAY_BUFFER) {
-            srcData = new Uint16Array(array);
-            type = gl.UNSIGNED_SHORT;
+            // Be careful with the data type here because with large models with a large number of elements, 
+            // it could extend the data type range. (Uint16Array - Uint32Array, gl.UNSIGNED_SHORT - gl.UNSIGNED_INT)
+            srcData = new Uint32Array(array);
+            type = gl.UNSIGNED_INT;
         }
         gl.bufferData(target, srcData, gl.STATIC_DRAW);
         gl.bindBuffer(target, null);
